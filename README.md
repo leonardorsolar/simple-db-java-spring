@@ -84,6 +84,8 @@ public class HelloController {
 
 agora precisamos adicionar ao código:
 
+# incluindo numa rota
+
 @Rest - clique em control espaço para o intelicence
 @RestController
 public class HelloController {
@@ -104,49 +106,69 @@ vá até o browser: http://localhost:8080/
 
 # BANCO DE DADOS
 
-# Como conectar o Node.js com o MySQL
+# Como conectar com o MySQL: criando a dependẽncia
 
-## Instalar o MySQL
+Considerando o seu conhecimento em Maven, basta adicionar as seguintes dependências no seu projeto.
 
-O que é o Mysql?
-O Mysql é um sistema de gerenciamento de banco de dados que utiliza a linguagem sql, pertence à empresa Oracle e pode ser executado tanto via linha de comando no terminal (caso esteja instalado) quanto em softwares auxiliares que facilitem a interação com o mesmo.
-
-###o mysql2
-
-npm install mysql2
-módulo para conecar no mysql
-
-criar o aquivo database.ts
-
-isntalrt o mudlo promises:
-npm install types/mysql2
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <scope>runtime</scope>
+</dependency>
 
 ## Realizar a configuração para conexão
 
-Podemos começar a configurar a conexão com o nosso banco de dados MySQL por meio da biblioteca MySQL2. Para tal, iremos criar um arquivo específico para esta implementação chamado connection. Nele, haverá uma constante que receberá a importação de “mysql2/promise” (o uso do “promise” é necessário porque consultas a bancos de dados externos envolvem tratamentos por assincronicidade e, para utilizarmos async e await com a biblioteca, precisamos realizar a importação da forma como foi explicado).
+Configuraçẽos do banco de dados de teste: application-test.properties
+Configurando o MySQL em projetos Spring Boot
 
-No arquivo database.ts:
+Após efetuar o download das dependências, vamos configurar as propriedades do MySQL e do JPA no projeto.
 
 // Criar a conexão com banco de dados MySQL
-const connection = mysql.createConnection({
 host: "localhost",
 user: "root",
 password: "root",
-database: "database",
-});
+database: "db-java-databases",
 
-// Verificar a conexão do Node.js com banco de dados
-connection.connect(function (err) {
-console.log("Conexão com o banco de dados realizado com sucesso!");
-});
+Para isso edite o arquivo de configuração application.properties e adicione o seguinte conteúdo:
 
-Note que o objeto passado como parâmetro da função createPool possui uma série de chaves necessárias para a conexão:
+codigo:
 
-Host - O endereço IP do MySQL: no nosso caso podemos utilizar o “localhost” ao invés do IP sem problemas, já que o mesmo se refere ao endereço local que estamos utilizando para executar o nosso servidor Node.js na porta 3003;
-Port - A porta que você escolheu para acessar o MySQL (se você instalou o MySQL utilizando as configurações padrões, a porta será a 3306);
-User - O nome do usuário que acessaremos o Mysql;
-Password - A senha que utilizaremos para acessar o Mysql;
-Database - O nome do banco de dados no qual iremos nos conectar.
+# usuário e senha de conexão com o banco de dados
+
+spring.datasource.username=root
+spring.datasource.password=root
+
+# url de conexão do banco de dados
+
+banco de dados: db-java-databases
+
+spring.datasource.url=jdbc:mysql://localhost:3306/db-java-databases?allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=yes&characterEncoding=UTF-8&useLegacyDatetimeCode=true&createDatabaseIfNotExist=true&useTimezone=true&serverTimezone=UTC
+
+# apontamos para o JPA e Hibernate qual é o Dialeto do banco de dados
+
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+
+# deixamos o hibernate responsável por ler nossas entidades e criar as tabelas do nosso banco de dados automaticamente
+
+spring.jpa.hibernate.ddl-auto=create
+
+# configuração do Hibernate para reconhecer o nome de tabelas em caixa alta
+
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+# configurações de log
+
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.show_sql=true
+spring.jpa.properties.hibernate.use_sql_comments=true
+
+fim do codigo.
 
 # Criação do banco de dados DBeaver:
 
@@ -161,100 +183,121 @@ aparecerá database:
 
 Certifique-se de substituir 'seu_usuario', 'sua_senha' e 'seu_banco_de_dados' pelas informações corretas do seu banco de dados MySQL.
 
-# Criação da tabela:
+# Demonstração
 
-cria a pasta sql e o arquivo sql.sql
+Vamos criar uma entidade que será convertida em tabela no nosso mysql.
+As entidades para representar o relacionamento de tabelas de uma Livaria. Onde teremos a tabela Book
 
-CREATE DATABASE db-databases;
+Mapeamento das tabelas em classes
 
-CREATE TABLE book(
-id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-title VARCHAR(200) NOT NULL,
-author VARCHAR(200) NOT NULL,
-description TEXT NOT NULL,
-created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+Aqui vamos aplicar a técnica de Mapeamento objeto-relacional (ORM), que é utilizada para reduzir a impedância da programação orientada aos objetos utilizando bancos de dados relacionais.
 
-DESCRIBE book;
+criando uma classe Entity
+src/main/java/br/com/aes/simpledb/entities/Book.java
 
-no DBeaver , crie a tabela e rode o código:
+atributos: variáveis e os tipos
 
-CREATE TABLE book(
-id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-title VARCHAR(200) NOT NULL,
-author VARCHAR(200) NOT NULL,
-description TEXT NOT NULL,
-created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+construtor sem argumento public Book() { }
 
-acessar o mysql no terminal:
+construtor com argumento public Book() { }
 
-mysql -u root -p
-senha: root
+métodos getter e setter para encapsulamento
 
-> show databases;
+métodos hascode e equals para comparar 2 objetos (comparar se 2 gamers são iguais ou não dentro de uma lista)
 
-# inserir na tabela
+# ORM - Mapeamento objeto relacional
 
-INSERT INTO book (title, author, description, created_at)
-VALUES ('Exemplo de Título', 'Exemplo de Autor', 'Exemplo de Descrição', CURRENT_TIMESTAMP);
+Para fazer o mapeamento relacional para que tenhas o registro na tabela é necessários algumas configurações:
 
-Depois de configurar como deve ser feita a conexão por meio da função createPool, podemos fazer nossas primeiras interações com o Mysql.
+É necessário: nome da tabela, os campos, os tipos, chave primaria
+
+    Em cima do nome da classe: anotation @Entity (anotation vai configurar o classe java para que ela seja equivalente a uma tabela do banco de dados)
+
+    Em cima do nome da classe tem como customizar o noem da tabela do banco: @Table(name = "tb_game")
+
+    Em cima do atributo tem como configurar a chave primária e autoincremental:
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    Modificando um nome de uma coluna:
+    @Column(name = "game_year") private Integer year;
+
+    Modificandoo tipo de uma coluna: @Column(columnDefinition = "TEXT") private String shortDescription
+
+# Criar nosso repositório
+
+Para garantirmos se a configuração e o mapeamento foram feitos de forma correta, vamos criar algumas interfaces que serão responsáveis por todas as operações das nossas tabelas com o banco de dados.
+
+repositories:
+src/main/java/br/com/aes/simpledb/repositories/BookRepository.java
+
+public interface BookRepository extends JpaRepository<Book, Long> {
+
+}
+
+Ao herdarmos JpaRepository o Spring Data será responsável por criar uma implementação das nossas interfaces em tempo de execução, e com isso ganhamos produtividade, pois essas interfaces vão prover inúmeros métodos para manipular os objetos diretamente no banco de dados.
 
 # Interagindo com o banco de dados
 
-# classe Book
+Agora vamos criar uma classe que vai popular nosso banco de dados e por fim realizar algumas consultas.
 
-import { connect } from "./database";
-//import { minhaDatabase } from 'modulo-externo'
+# Controller
 
-export default class Book {
-database: any;
-constructor() {
-// this.database = minhaDatabase.inicia();
-this.database = connect();
+src/main/java/br/com/aes/simpledb/controllers/BookController.java
+
+@Service
+public class GameService {
+
+@Autowired
+private GameRepository gameRepository;
+
+public List<Game> findAll() {
+List<Game> result = gameRepository.findAll();
+return result;
 }
 
-getBook() {
-const listBook = this.database.query("select \* from book");
-console.log(listBook);
 }
 
-// save() {
-// this.database.save(this);
-// }
+ver:
+
+17. Bora testar. Primeiro faça "clean package" pra garantir que está compilando. Depois vá para a pasta do seu projeto acesse o diretório target/ e faça java -jar testespring-0.0.1-SNAPSHOT.jar
+
+18. Abra o endereço http://localhost:8080/swagger-ui.html
+
+Pronto! Você criou uma serviço rest com conexão ao banco de dados MySQL.
+
+https://pt.linkedin.com/pulse/spring-boot-e-data-conex%C3%A3o-ao-banco-de-dados-denis-cabral-lopes
+
+Ainda em implementação:
+
+# Service
+
+src/main/java/br/com/aes/simpledb/services/BookService.java
+
+public class BookService {
+
 }
 
-# index.ts
+Componente responsável por implementar lógica de negócio(regras)
 
-instanciando a classe Book
+Registrar os componentes: @Component ou apelido: @Service
 
-const book = new Book();
-console.log(book);
+public retorno função(){
 
-# incluindo numa rota
+}
 
-app.get("/book", function (req, res) {
-const book = new Book();
-console.log(book);
-res.send(book);
-});
+public List findAll() {
 
-# terminal mysql
+}
 
-??? rodar o create table
-mysql -u root -p db-databases caminho-completo-para-o-arquivo/db.sql
+é necessário injetar a dependência para acessar os métodos do repository (puxando uma isntância)
 
-# terminal mysql: gerenciamento avançado
+@Autowired private GameRepository gameRepository;
 
-mysql -u root -p
-Visualizando as conexões ativas:
-SHOW PROCESSLIST;
-| 10 | root | localhost:56084 | db-databases | Sleep | 2 | | NULL
-Ela retornará valores como PID (número do processo da conexão), a quantidade de conexões do seu usuário à base, a query que a conexão está rodando no momento ou se ela está ociosa (sleep).
+trazer a lista do banco dedados
 
-Derrubando conexões e processos presos
-KILL <numero_PID>;
+public List findAll() { List result = gameRepository.findAll(); return result; }
 
-máximo de conexão:
-SHOW VARIABLES LIKE '%connection%';
+# Testar a classe: run
+
+fonte
+https://www.gasparbarancelli.com/post/banco-de-dados-mysql-com-spring-boot
