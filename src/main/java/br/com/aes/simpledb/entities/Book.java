@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+// anotations
+//Entity: especifica a criação da tabela
 @Entity
 @Table(name = "tb_book")
 public class Book {
@@ -49,6 +51,22 @@ public class Book {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  public String getAuthor() {
+    return author;
+  }
+
+  public void setAuthor(String author) {
+    this.author = author;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   @Override

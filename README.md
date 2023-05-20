@@ -109,6 +109,7 @@ vá até o browser: http://localhost:8080/
 # Como conectar com o MySQL: criando a dependẽncia
 
 Considerando o seu conhecimento em Maven, basta adicionar as seguintes dependências no seu projeto.
+jpa:
 
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -119,6 +120,12 @@ Considerando o seu conhecimento em Maven, basta adicionar as seguintes dependên
     <artifactId>mysql-connector-java</artifactId>
     <scope>runtime</scope>
 </dependency>
+
+org.springframework.boot:spring-boot-starter-data-jpa: Essa dependência fornece as bibliotecas necessárias para usar o Spring Data JPA em um projeto Spring Boot. O Spring Data JPA é uma camada de abstração que facilita o acesso e a manipulação de dados em bancos de dados relacionais usando a tecnologia Java Persistence API (JPA). Ele oferece uma maneira conveniente de escrever consultas e realizar operações de CRUD (Create, Read, Update, Delete) no banco de dados.
+
+mysql:mysql-connector-java: Essa dependência é necessária para conectar um aplicativo Java ao banco de dados MySQL. O MySQL Connector/J é o driver JDBC (Java Database Connectivity) para o MySQL, que permite a comunicação entre o aplicativo Java e o banco de dados MySQL. Com essa dependência, você pode estabelecer conexões, executar consultas e realizar outras operações relacionadas ao banco de dados MySQL em seu aplicativo Java.
+
+Ao adicionar essas dependências ao arquivo pom.xml (arquivo de configuração do Maven), o Maven cuidará de baixar as bibliotecas necessárias e gerenciar as dependências do seu projeto automaticamente. Isso facilita a construção e a execução de aplicativos Java com Spring Boot e Spring Data JPA, utilizando um banco de dados MySQL.
 
 ## Realizar a configuração para conexão
 
@@ -133,9 +140,15 @@ user: "root",
 password: "root",
 database: "db-java-databases",
 
+<!-- server host: localhost
+port 3306
+database: database
+nome de uusário: root
+senha: root -->
+
 Para isso edite o arquivo de configuração application.properties e adicione o seguinte conteúdo:
 
-codigo:
+codigo base:----
 
 # usuário e senha de conexão com o banco de dados
 
@@ -146,16 +159,24 @@ spring.datasource.password=root
 
 banco de dados: db-java-databases
 
-spring.datasource.url=jdbc:mysql://localhost:3306/db-java-databases?allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=yes&characterEncoding=UTF-8&useLegacyDatetimeCode=true&createDatabaseIfNotExist=true&useTimezone=true&serverTimezone=UTC
+spring.datasource.url=jdbc:mysql://localhost:3306/db-java-databases
+
+<!-- spring.datasource.url=jdbc:mysql://localhost:3306/db-java-databases?allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&useSSL=false&useUnicode=yes&characterEncoding=UTF-8&useLegacyDatetimeCode=true&createDatabaseIfNotExist=true&useTimezone=true&serverTimezone=UTC -->
+
+# deixamos o hibernate responsável por ler nossas entidades e criar as tabelas do nosso banco de dados automaticamente
+
+spring.jpa.hibernate.ddl-auto=create
+
+# altera a estrtura da tabela caso a entidade tenha mudanças
+
+ <!-- spring.jpa.hibernate.ddl-auto=update -->
+
+# codigo adicional:
 
 # apontamos para o JPA e Hibernate qual é o Dialeto do banco de dados
 
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
-
-# deixamos o hibernate responsável por ler nossas entidades e criar as tabelas do nosso banco de dados automaticamente
-
-spring.jpa.hibernate.ddl-auto=create
 
 # configuração do Hibernate para reconhecer o nome de tabelas em caixa alta
 
@@ -168,22 +189,9 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.show_sql=true
 spring.jpa.properties.hibernate.use_sql_comments=true
 
-fim do codigo.
+----fim do codigo.
 
-# Criação do banco de dados DBeaver:
-
-crie uma conexao mysql
-server host: localhost
-port 3306
-database: database
-nome de uusário: root
-senha: root
-
-aparecerá database:
-
-Certifique-se de substituir 'seu_usuario', 'sua_senha' e 'seu_banco_de_dados' pelas informações corretas do seu banco de dados MySQL.
-
-# Demonstração
+# Configurando o modelo para gerar uma tabela no banco de dados
 
 Vamos criar uma entidade que será convertida em tabela no nosso mysql.
 As entidades para representar o relacionamento de tabelas de uma Livaria. Onde teremos a tabela Book
@@ -192,17 +200,14 @@ Mapeamento das tabelas em classes
 
 Aqui vamos aplicar a técnica de Mapeamento objeto-relacional (ORM), que é utilizada para reduzir a impedância da programação orientada aos objetos utilizando bancos de dados relacionais.
 
-criando uma classe Entity
+## criando uma classe Entity
+
 src/main/java/br/com/aes/simpledb/entities/Book.java
 
 atributos: variáveis e os tipos
-
 construtor sem argumento public Book() { }
-
 construtor com argumento public Book() { }
-
 métodos getter e setter para encapsulamento
-
 métodos hascode e equals para comparar 2 objetos (comparar se 2 gamers são iguais ou não dentro de uma lista)
 
 # ORM - Mapeamento objeto relacional
@@ -211,21 +216,32 @@ Para fazer o mapeamento relacional para que tenhas o registro na tabela é neces
 
 É necessário: nome da tabela, os campos, os tipos, chave primaria
 
+        // anotations
+        //Entity: especifica a criação da tabela
+        @Entity
+        @Table(name = "tb_book")
+        public class Book { ...
+
     Em cima do nome da classe: anotation @Entity (anotation vai configurar o classe java para que ela seja equivalente a uma tabela do banco de dados)
-
-    Em cima do nome da classe tem como customizar o noem da tabela do banco: @Table(name = "tb_game")
-
+    Em cima do nome da classe tem como customizar o nome da tabela do banco: @Table(name = "tb_book")
     Em cima do atributo tem como configurar a chave primária e autoincremental:
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     Modificando um nome de uma coluna:
     @Column(name = "game_year") private Integer year;
-
     Modificandoo tipo de uma coluna: @Column(columnDefinition = "TEXT") private String shortDescription
+
+    todo atributo tem que ter o getter e setter: selecione o atributo e clique na lampada e peça para gersra o get e set
+
+# Testando a criação da tabela
+
+run
+utilize o spring boot dashboard
 
 # Criar nosso repositório
 
-Para garantirmos se a configuração e o mapeamento foram feitos de forma correta, vamos criar algumas interfaces que serão responsáveis por todas as operações das nossas tabelas com o banco de dados.
+Camada de persistencias: parte do projeto onde podemos realizar ações no banco de dados (cadastros/seleções/atualizações/exclusões)
+
+vamos criar algumas interfaces que serão responsáveis por todas as operações das nossas tabelas com o banco de dados.
 
 repositories:
 src/main/java/br/com/aes/simpledb/repositories/BookRepository.java
@@ -242,16 +258,25 @@ Agora vamos criar uma classe que vai popular nosso banco de dados e por fim real
 
 # Controller
 
+anotation @Autowired: é um atalho onde não há necessiadde de isntanciar objetos (injeção de dependências)
+
 src/main/java/br/com/aes/simpledb/controllers/BookController.java
 
-@Service
-public class GameService {
+@RestController
+@RequestMapping(value = "/book")
+public class BookController {
 
 @Autowired
-private GameRepository gameRepository;
+private BookRepository bookRepository;
 
-public List<Game> findAll() {
-List<Game> result = gameRepository.findAll();
+// @GetMapping("getAll")
+// public List<Book> getData() {
+// return bookRepository.findAll();
+// }
+
+@GetMapping
+public List<Book> findAll() {
+List<Book> result = bookRepository.findAll();
 return result;
 }
 

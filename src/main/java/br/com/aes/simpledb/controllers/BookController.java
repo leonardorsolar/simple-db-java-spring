@@ -14,8 +14,11 @@ import br.com.aes.simpledb.repositories.BookRepository;
 @RequestMapping(value = "/book")
 public class BookController {
 
+  // @Autowired: cria o new, a instância
   @Autowired
   private BookRepository bookRepository;
+  // crio o objeto do tipo repositorio
+  // bookRepository: é o objeto que chamará o método
 
   // @GetMapping("getAll")
   // public List<Book> getData() {
